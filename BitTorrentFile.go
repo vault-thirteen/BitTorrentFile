@@ -35,7 +35,8 @@ type BitTorrentFile struct {
 	Files []File
 
 	// List of announce URLs of trackers described in the BitTorrent File.
-	AnnounceAddresses []AnnounceAddress
+	AnnounceUrlMain AnnounceAddress
+	AnnounceUrlsAux [][]AnnounceAddress
 
 	// Creation time of the BitTorrent File.
 	CreationTime time.Time
@@ -70,7 +71,32 @@ func (tf *BitTorrentFile) Open() (err error) {
 		return err
 	}
 
-	//TODO: Parse the object.
+	err = tf.readAnnounceUrls()
+	if err != nil {
+		return err
+	}
+
+	err = tf.readCreationTime()
+	if err != nil {
+		return err
+	}
+
+	err = tf.readComment()
+	if err != nil {
+		return err
+	}
+
+	err = tf.readCreator()
+	if err != nil {
+		return err
+	}
+
+	err = tf.readEncoding()
+	if err != nil {
+		return err
+	}
+
+	//TODO: Files list.
 
 	return nil
 }
@@ -125,6 +151,107 @@ func (tf *BitTorrentFile) calculateBtih() (err error) {
 	// Calculate the BTIH check sums.
 	tf.BTIH.Bytes, tf.BTIH.Text = CalculateSha1(infoSectionBA)
 	tf.BTIH2.Bytes, tf.BTIH2.Text = CalculateSha256(infoSectionBA)
+
+	return nil
+}
+
+// readAnnounceUrls reads announce URLs.
+func (tf *BitTorrentFile) readAnnounceUrls() (err error) {
+
+	// 1. Get the 'announce' section from the decoded object.
+	var buf1 string
+	buf1, err = getSectionValueAsString(tf, SectionAnnounce)
+	if err != nil {
+		return err
+	}
+
+	var mainAnnounceUrl *AnnounceAddress
+	mainAnnounceUrl, err = NewAnnounceAddressFromString(buf1)
+	if err != nil {
+		return err
+	}
+
+	tf.AnnounceUrlMain = *mainAnnounceUrl
+
+	// 2. Get the optional 'announce-list' section from the decoded object.
+	var buf2 []string
+	var buf3 [][]string
+	buf3, err = getSectionValueAsArrayOfStringArrays(tf, SectionAnnounceList)
+	if err != nil {
+		if err.Error() == ErrSectionDoesNotExist {
+			return nil
+		}
+		return err
+	}
+
+	tf.AnnounceUrlsAux = make([][]AnnounceAddress, 0, len(buf3))
+
+	var aa []AnnounceAddress
+	for _, buf2 = range buf3 {
+		aa, err = NewAnnounceAddressListFromStringArray(buf2)
+		if err != nil {
+			return err
+		}
+
+		aa = removeDuplicatesFromList[AnnounceAddress](aa)
+
+		tf.AnnounceUrlsAux = append(tf.AnnounceUrlsAux, aa)
+	}
+
+	return nil
+}
+
+// readCreationTime reads creation time.
+func (tf *BitTorrentFile) readCreationTime() (err error) {
+	var i int
+	i, err = getSectionValueAsInt(tf, SectionCreationDate)
+	if err != nil {
+		if err.Error() == ErrSectionDoesNotExist {
+			return nil
+		}
+		return err
+	}
+
+	tf.CreationTime = time.Unix(int64(i), 0)
+
+	return nil
+}
+
+// readComment reads comment.
+func (tf *BitTorrentFile) readComment() (err error) {
+	tf.Comment, err = getSectionValueAsString(tf, SectionComment)
+	if err != nil {
+		if err.Error() == ErrSectionDoesNotExist {
+			return nil
+		}
+		return err
+	}
+
+	return nil
+}
+
+// readCreator reads creator.
+func (tf *BitTorrentFile) readCreator() (err error) {
+	tf.Creator, err = getSectionValueAsString(tf, SectionCreatedBy)
+	if err != nil {
+		if err.Error() == ErrSectionDoesNotExist {
+			return nil
+		}
+		return err
+	}
+
+	return nil
+}
+
+// readEncoding reads encoding.
+func (tf *BitTorrentFile) readEncoding() (err error) {
+	tf.Encoding, err = getSectionValueAsString(tf, SectionEncoding)
+	if err != nil {
+		if err.Error() == ErrSectionDoesNotExist {
+			return nil
+		}
+		return err
+	}
 
 	return nil
 }
