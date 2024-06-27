@@ -7,6 +7,8 @@ type AnnounceAddress struct {
 	RawData string
 }
 
+// NewAnnounceAddressFromString parses the string into the object of
+// AnnounceAddress type.
 func NewAnnounceAddressFromString(s string) (aa *AnnounceAddress, err error) {
 	aa = &AnnounceAddress{
 		RawData: s,
@@ -20,6 +22,8 @@ func NewAnnounceAddressFromString(s string) (aa *AnnounceAddress, err error) {
 	return aa, nil
 }
 
+// NewAnnounceAddressListFromStringArray parses the string array into the array
+// of objects of AnnounceAddress type.
 func NewAnnounceAddressListFromStringArray(sa []string) (aal []AnnounceAddress, err error) {
 	aal = make([]AnnounceAddress, 0, len(sa))
 

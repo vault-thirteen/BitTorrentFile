@@ -1,5 +1,7 @@
 package generic
 
+// RemoveDuplicatesFromList remove duplicate items from a generic list.
+// Order of items is not preserved.
 func RemoveDuplicatesFromList[T comparable](in []T) (out []T) {
 	out = []T{}
 	m := make(map[T]bool)

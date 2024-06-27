@@ -6,6 +6,7 @@ import (
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
 )
 
+// InterfaceAsString tries to interpret an interface as a string.
 func InterfaceAsString(x any) (s string, err error) {
 	var ok bool
 	var buf []byte
@@ -23,6 +24,7 @@ func InterfaceAsString(x any) (s string, err error) {
 	return "", errors.New(e.ErrTypeAssertion)
 }
 
+// InterfaceAsStringArray tries to interpret an interface as a string array.
 func InterfaceAsStringArray(x any) (sa []string, err error) {
 	var ok bool
 	var ar []any
@@ -45,6 +47,8 @@ func InterfaceAsStringArray(x any) (sa []string, err error) {
 	return sa, nil
 }
 
+// InterfaceAsArrayOfStringArrays tries to interpret an interface as an array
+// of string arrays.
 func InterfaceAsArrayOfStringArrays(x any) (asa [][]string, err error) {
 	var ok bool
 	var ar []any
@@ -67,6 +71,7 @@ func InterfaceAsArrayOfStringArrays(x any) (asa [][]string, err error) {
 	return asa, nil
 }
 
+// InterfaceAsInt tries to interpret an interface as an int.
 func InterfaceAsInt(x any) (i int, err error) {
 	var ok bool
 	i, ok = x.(int)

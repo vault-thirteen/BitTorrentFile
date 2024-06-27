@@ -5,6 +5,8 @@ import (
 	"unsafe"
 )
 
+// GetNativeEndianness tries to guess the "endianness" of the machine where
+// this code is executed on.
 func GetNativeEndianness() binary.ByteOrder {
 	buf := [2]byte{}
 	*(*uint16)(unsafe.Pointer(&buf[0])) = uint16(0xABCD)

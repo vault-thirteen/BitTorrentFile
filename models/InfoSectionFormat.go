@@ -1,5 +1,6 @@
 package models
 
+// InfoSectionFormat is the format of the 'info' section.
 type InfoSectionFormat byte
 
 const (

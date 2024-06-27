@@ -2,6 +2,8 @@ package models
 
 import "github.com/vault-thirteen/BitTorrentFile/models/hash"
 
+// FileHash is a collection of file's hash sums.
+// All these sums are optional.
 type FileHash struct {
 	// CRC32 check sum of the file.
 	// This field is optional.

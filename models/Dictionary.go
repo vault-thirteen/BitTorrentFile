@@ -11,8 +11,11 @@ import (
 	b "github.com/vault-thirteen/bencode"
 )
 
+// Dictionary is a "bencoded" dictionary.
 type Dictionary []b.DictionaryItem
 
+// FindDictionaryItem tries to search for a dictionary entry (item) specified
+// by its key (name). On success, the entry is returned.
 func (d *Dictionary) FindDictionaryItem(name string) (item *b.DictionaryItem, err error) {
 	for _, x := range *d {
 		if string(x.Key) == name {
@@ -23,6 +26,8 @@ func (d *Dictionary) FindDictionaryItem(name string) (item *b.DictionaryItem, er
 	return nil, errors.New(e.ErrItemIsNotFound)
 }
 
+// IsFieldPresent tries to search for a dictionary entry (item) specified
+// by its key (name). On success, the presence flag is returned.
 func (d *Dictionary) IsFieldPresent(fieldName string) (isFieldPresent bool) {
 	_, err := d.FindDictionaryItem(fieldName)
 	if err == nil {
@@ -32,6 +37,7 @@ func (d *Dictionary) IsFieldPresent(fieldName string) (isFieldPresent bool) {
 	return false
 }
 
+// GetFieldValue returns a dictionary's entry specified by its key (name).
 func (d *Dictionary) GetFieldValue(fieldName string) (fv any, err error) {
 	var field *b.DictionaryItem
 	field, err = d.FindDictionaryItem(fieldName)
@@ -46,6 +52,8 @@ func (d *Dictionary) GetFieldValue(fieldName string) (fv any, err error) {
 	return field.Value, nil
 }
 
+// GetFieldValueAsInt returns a dictionary's entry specified by its key (name)
+// as int.
 func (d *Dictionary) GetFieldValueAsInt(fieldName string) (fv int, err error) {
 	var tmp any
 	tmp, err = d.GetFieldValue(fieldName)
@@ -56,6 +64,8 @@ func (d *Dictionary) GetFieldValueAsInt(fieldName string) (fv int, err error) {
 	return iface.InterfaceAsInt(tmp)
 }
 
+// GetFieldValueAsString returns a dictionary's entry specified by its key (name)
+// as string.
 func (d *Dictionary) GetFieldValueAsString(fieldName string) (fv string, err error) {
 	var tmp any
 	tmp, err = d.GetFieldValue(fieldName)
@@ -66,6 +76,8 @@ func (d *Dictionary) GetFieldValueAsString(fieldName string) (fv string, err err
 	return iface.InterfaceAsString(tmp)
 }
 
+// GetFieldValueAsStringArray returns a dictionary's entry specified by its key
+// (name) as a string array.
 func (d *Dictionary) GetFieldValueAsStringArray(fieldName string) (fv []string, err error) {
 	var tmp any
 	tmp, err = d.GetFieldValue(fieldName)
@@ -76,6 +88,8 @@ func (d *Dictionary) GetFieldValueAsStringArray(fieldName string) (fv []string, 
 	return iface.InterfaceAsStringArray(tmp)
 }
 
+// GuessFormat tries to guess the format of the dictionary. This method is
+// used only for the 'info' section dictionary.
 func (d *Dictionary) GuessFormat() (format InfoSectionFormat) {
 	var isLengthFieldPresent = d.IsFieldPresent(FieldLength)
 	var isFilesFieldPresent = d.IsFieldPresent(FieldFiles)
@@ -95,6 +109,7 @@ func (d *Dictionary) GuessFormat() (format InfoSectionFormat) {
 	return InfoSectionFormat_MultiFile
 }
 
+// ReadFileSize reads the 'length' field of the dictionary.
 func (d *Dictionary) ReadFileSize() (fs int, err error) {
 	fs, err = d.GetFieldValueAsInt(FieldLength)
 	if err != nil {
@@ -104,6 +119,8 @@ func (d *Dictionary) ReadFileSize() (fs int, err error) {
 	return fs, nil
 }
 
+// ReadOptionalFileCrc32 reads the optional field of the dictionary, CRC32
+// check sum field.
 func (d *Dictionary) ReadOptionalFileCrc32() (isCrc32Set bool, crc32 *hash.Crc32Sum, err error) {
 	var buf1 string
 	buf1, err = d.GetFieldValueAsString(FieldCrc32Sum)
@@ -131,6 +148,8 @@ func (d *Dictionary) ReadOptionalFileCrc32() (isCrc32Set bool, crc32 *hash.Crc32
 	return true, crc32, nil
 }
 
+// ReadOptionalFileMd5 reads the optional field of the dictionary, MD5
+// check sum field.
 func (d *Dictionary) ReadOptionalFileMd5() (isMd5Set bool, md5 *hash.Md5Sum, err error) {
 	var buf1 string
 	buf1, err = d.GetFieldValueAsString(FieldMd5Sum)
@@ -158,6 +177,8 @@ func (d *Dictionary) ReadOptionalFileMd5() (isMd5Set bool, md5 *hash.Md5Sum, err
 	return true, md5, nil
 }
 
+// ReadOptionalFileSha1 reads the optional field of the dictionary, SHA-1
+// check sum field.
 func (d *Dictionary) ReadOptionalFileSha1() (isSha1Set bool, sha1 *hash.Sha1Sum, err error) {
 	var buf1 string
 	buf1, err = d.GetFieldValueAsString(FieldSha1Sum)
@@ -185,6 +206,8 @@ func (d *Dictionary) ReadOptionalFileSha1() (isSha1Set bool, sha1 *hash.Sha1Sum,
 	return true, sha1, nil
 }
 
+// ReadOptionalFileSha256 reads the optional field of the dictionary, SHA-256
+// check sum field.
 func (d *Dictionary) ReadOptionalFileSha256() (isSha256Set bool, sha256 *hash.Sha256Sum, err error) {
 	var buf1 string
 	buf1, err = d.GetFieldValueAsString(FieldSha256Sum)
@@ -212,6 +235,11 @@ func (d *Dictionary) ReadOptionalFileSha256() (isSha256Set bool, sha256 *hash.Sh
 	return true, sha256, nil
 }
 
+// ReadFilePath reads the file path.
+// Beware that depending on the format of the 'info' section, this may be
+// either the full path or the path without the root path. If you are looking
+// for a full path, you should prepend this path with the root path when it is
+// needed. Unfortunately, BitTorrent file format is crazy.
 func (d *Dictionary) ReadFilePath(isf InfoSectionFormat) (filePath []string, err error) {
 	switch isf {
 	case InfoSectionFormat_SingleFile:

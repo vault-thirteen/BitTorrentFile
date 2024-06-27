@@ -12,9 +12,13 @@ import (
 	b "github.com/vault-thirteen/bencode"
 )
 
+// BitTorrentFile is a BitTorrent file.
 type BitTorrentFile struct {
 	// Source is a file which is being parsed.
 	Source *b.File
+
+	// Decoded raw data.
+	RawData *b.DecodedObject
 
 	// Version of the BitTorrent File.
 	// It can be numeric or textual while there are some crazy things such as
@@ -28,12 +32,6 @@ type BitTorrentFile struct {
 	// New BitTorrent Info Hash.
 	// Second version of info hash.
 	BTIH2 hash.BtihData2
-
-	// Decoded raw data.
-	RawData *b.DecodedObject
-
-	// List of files described in the BitTorrent File.
-	Files []models.File
 
 	// List of announce URLs of trackers described in the BitTorrent File.
 	AnnounceUrlMain models.AnnounceAddress
@@ -51,6 +49,9 @@ type BitTorrentFile struct {
 	// String encoding format used to generate the 'pieces' field of the 'info'
 	// dictionary of the BitTorrent File.
 	Encoding string
+
+	// List of files described in the BitTorrent File.
+	Files []models.File
 }
 
 // NewBitTorrentFile is a constructor of the BitTorrentFile object.
@@ -356,6 +357,8 @@ func (tf *BitTorrentFile) readFiles() (err error) {
 	return nil
 }
 
+// readSingleFile reads the single file's data when the single-file format is
+// used.
 func (tf *BitTorrentFile) readSingleFile(infoSection models.Dictionary) (files []models.File, err error) {
 	var f models.File
 
@@ -397,6 +400,8 @@ func (tf *BitTorrentFile) readSingleFile(infoSection models.Dictionary) (files [
 	return files, err
 }
 
+// readMultipleFiles reads data of multiple files when the multi-file format is
+// used.
 func (tf *BitTorrentFile) readMultipleFiles(infoSection models.Dictionary) (files []models.File, err error) {
 	var rootFolderName string
 	rootFolderName, err = infoSection.GetFieldValueAsString(models.FieldName)
