@@ -1,4 +1,4 @@
-package btf
+package models
 
 import (
 	"testing"
@@ -6,22 +6,14 @@ import (
 	"github.com/vault-thirteen/auxie/tester"
 )
 
-func Test_format(t *testing.T) {
+func Test_field(t *testing.T) {
 	var aTest = tester.New(t)
 
-	aTest.MustBeEqual(SectionInfo, "info")
-	aTest.MustBeEqual(SectionAnnounce, "announce")
-	aTest.MustBeEqual(SectionAnnounceList, "announce-list")
-	aTest.MustBeEqual(SectionCreationDate, "creation date")
-	aTest.MustBeEqual(SectionComment, "comment")
-	aTest.MustBeEqual(SectionCreatedBy, "created by")
-	aTest.MustBeEqual(SectionEncoding, "encoding")
-	aTest.MustBeEqual(SectionPieceLayers, "piece layers")
-
+	aTest.MustBeEqual(FieldCrc32Sum, "crc32sum")
 	aTest.MustBeEqual(FieldFileTree, "file tree")
 	aTest.MustBeEqual(FieldFiles, "files")
 	aTest.MustBeEqual(FieldLength, "length")
-	aTest.MustBeEqual(FieldMD5Sum, "md5sum")
+	aTest.MustBeEqual(FieldMd5Sum, "md5sum")
 	aTest.MustBeEqual(FieldMetaVersion, "meta version")
 	aTest.MustBeEqual(FieldName, "name")
 	aTest.MustBeEqual(FieldPath, "path")
@@ -30,4 +22,6 @@ func Test_format(t *testing.T) {
 	aTest.MustBeEqual(FieldPieceRoot, "piece root")
 	aTest.MustBeEqual(FieldPieces, "pieces")
 	aTest.MustBeEqual(FieldPrivate, "private")
+	aTest.MustBeEqual(FieldSha1Sum, "sha1sum")
+	aTest.MustBeEqual(FieldSha256Sum, "sha256sum")
 }

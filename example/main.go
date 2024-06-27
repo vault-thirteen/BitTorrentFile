@@ -12,7 +12,8 @@ import (
 const (
 	ExampleFolder = "example"
 	DataFolder    = "data"
-	FileName      = "5942384.torrent"
+	FileName1     = "5942384.torrent"
+	FileName2     = "DX12.torrent"
 )
 
 func main() {
@@ -28,7 +29,7 @@ func mustBeNoError(err error) {
 
 func openFile() (err error) {
 	var tf = btf.NewBitTorrentFile(
-		filepath.Join(ExampleFolder, DataFolder, FileName),
+		filepath.Join(ExampleFolder, DataFolder, FileName2),
 	)
 
 	err = tf.Open()

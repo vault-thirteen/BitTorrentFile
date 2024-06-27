@@ -1,23 +1,12 @@
-package btf
-
-// Sections.
-const (
-	SectionInfo         = "info"
-	SectionAnnounce     = "announce"
-	SectionAnnounceList = "announce-list"
-	SectionCreationDate = "creation date"
-	SectionComment      = "comment"
-	SectionCreatedBy    = "created by"
-	SectionEncoding     = "encoding"
-	SectionPieceLayers  = "piece layers"
-)
+package models
 
 // Fields.
 const (
+	FieldCrc32Sum    = "crc32sum"
 	FieldFileTree    = "file tree"
 	FieldFiles       = "files"
 	FieldLength      = "length"
-	FieldMD5Sum      = "md5sum"
+	FieldMd5Sum      = "md5sum"
 	FieldMetaVersion = "meta version"
 	FieldName        = "name"
 	FieldPath        = "path"
@@ -26,6 +15,8 @@ const (
 	FieldPieceRoot   = "piece root"
 	FieldPieces      = "pieces"
 	FieldPrivate     = "private"
+	FieldSha1Sum     = "sha1sum"
+	FieldSha256Sum   = "sha256sum"
 )
 
 // Notes.
