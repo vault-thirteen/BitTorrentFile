@@ -9,4 +9,5 @@ const (
 	ErrSectionDoesNotExist        = "section does not exist"
 	ErrTypeAssertion              = "type assertion error"
 	ErrVersionIsUnsupported       = "version is unsupported"
+	ErrFTimeFormatIsBroken        = "time format is broken: %s"
 )

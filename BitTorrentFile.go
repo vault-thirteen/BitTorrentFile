@@ -332,14 +332,33 @@ func (tf *BitTorrentFile) readAnnounceUrls() (err error) {
 func (tf *BitTorrentFile) readCreationTime() (err error) {
 	var i int
 	i, err = tf.GetSectionValueAsInt(models.SectionCreationDate)
-	if err != nil {
-		if err.Error() == e.ErrSectionDoesNotExist {
-			return nil
-		}
+	if err == nil {
+		tf.CreationTime = time.Unix(int64(i), 0)
+		return nil
+	}
+	if err.Error() == e.ErrSectionDoesNotExist {
+		return nil
+	}
+
+	// Some stupid people, such as administrators of BitTorrent tracker
+	// named as 'RuTracker', store creation date in their own format,
+	// breaking the BitTorrent specification ! They are damned people.
+	// Such stupid violations are processed below.
+	if err.Error() != e.ErrTypeAssertion {
 		return err
 	}
 
-	tf.CreationTime = time.Unix(int64(i), 0)
+	var s string
+	s, err = tf.GetSectionValueAsString(models.SectionCreationDate)
+	if err != nil {
+		return err
+	}
+
+	// Try to parse the broken time.
+	tf.CreationTime, err = models.ParseBrokenTime(s)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
