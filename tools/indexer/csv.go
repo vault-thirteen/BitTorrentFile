@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/vault-thirteen/BitTorrentFile/models"
@@ -33,12 +32,13 @@ const (
 	CsvColumn5 = "Stored size"
 )
 
-func getCsvFileHeader() []string {
-	return []string{CsvColumn1, CsvColumn2, CsvColumn3, CsvColumn4, CsvColumn5}
+func getCsvFileHeader() []any {
+	return []any{CsvColumn1, CsvColumn2, CsvColumn3, CsvColumn4, CsvColumn5}
 }
 
-func prepareCsvLine(torrentFilePath string, storedFileInfo models.File) (line []string, err error) {
+func prepareCsvLine(torrentFilePath string, storedFileInfo models.File) (line []any, err error) {
 	torrentFileFolder, torrentFileName := filepath.Split(torrentFilePath)
+	torrentFileFolder = escapeBackSlashes(file.CleanFilePath(torrentFileFolder))
 	torrentFileExt := filepath.Ext(torrentFileName)
 	torrentFileBaseName := strings.TrimSuffix(torrentFileName, torrentFileExt)
 
@@ -48,6 +48,12 @@ func prepareCsvLine(torrentFilePath string, storedFileInfo models.File) (line []
 
 	storedFilePath := filepath.Join(storedFileInfo.Path...)
 	storedFileFolder, storedFileName := filepath.Split(storedFilePath)
+	storedFileFolder = escapeBackSlashes(file.CleanFilePath(storedFileFolder))
 
-	return []string{torrentFileBaseName, torrentFileFolder, storedFileName, storedFileFolder, strconv.Itoa(storedFileInfo.Size)}, nil
+	return []any{torrentFileBaseName, torrentFileFolder, storedFileName, storedFileFolder, storedFileInfo.Size}, nil
+}
+
+// escapeBackSlashes escapes back slashes.
+func escapeBackSlashes(s string) string {
+	return strings.ReplaceAll(s, `\`, `\\`)
 }

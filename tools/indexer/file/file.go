@@ -45,3 +45,15 @@ func GetFolderFiles(folder string, readSubFolders bool, outFiles *[]string) (err
 
 	return nil
 }
+
+func CleanFilePath(path string) (cp string) {
+	cp = filepath.Clean(path)
+
+	// The 'filepath.Clean' method adds a dot symbol to an empty string.
+	// We do not need it !
+	if (len(cp) == 1) && (cp == `.`) {
+		cp = ""
+	}
+
+	return cp
+}

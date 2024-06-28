@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +8,7 @@ import (
 
 	btf "github.com/vault-thirteen/BitTorrentFile"
 	"github.com/vault-thirteen/BitTorrentFile/models"
+	"github.com/vault-thirteen/BitTorrentFile/shitty/csv"
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/file"
 	"github.com/vault-thirteen/auxie/errors"
@@ -56,22 +56,19 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 		}
 	}()
 
-	csvWriter := csv.NewWriter(csvFile)
-	csvWriter.UseCRLF = true
 	// Unfortunately standard CSV library in Golang is absolutely useless.
 	// It does not add quotes to strings when writes them into a CSV file !!!
-	// TODO: ...
 
-	defer csvWriter.Flush()
+	csvWriter := csv.NewWriter(csvFile)
 
-	err = csvWriter.Write(getCsvFileHeader())
+	err = csvWriter.WriteRow(getCsvFileHeader())
 	if err != nil {
 		return nil, err
 	}
 
 	// For each BitTorrent file ...
 	var storedFilesInfo []models.File
-	var csvLine []string
+	var csvLine []any
 	var n = 0
 	for _, btFile := range files {
 		n++
@@ -89,7 +86,7 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 				return nil, err
 			}
 
-			err = csvWriter.Write(csvLine)
+			err = csvWriter.WriteRow(csvLine)
 			if err != nil {
 				return nil, err
 			}

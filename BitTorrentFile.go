@@ -122,6 +122,11 @@ func (tf *BitTorrentFile) Open() (err error) {
 		return err
 	}
 
+	err = tf.sanitiseFiles()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -421,6 +426,15 @@ func (tf *BitTorrentFile) readFiles() (err error) {
 
 	default:
 		return errors.New(e.ErrVersionIsUnsupported)
+	}
+
+	return nil
+}
+
+// sanitiseFiles sanitises the list of files.
+func (tf *BitTorrentFile) sanitiseFiles() (err error) {
+	for _, tFile := range tf.Files {
+		tFile.SanitiseFilePath()
 	}
 
 	return nil
