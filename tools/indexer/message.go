@@ -1,7 +1,7 @@
 package main
 
 const (
-	MsgFProcessingFiles      = "Processing %d BitTorrent files."
+	MsgFProcessingFiles      = "Processing %d BitTorrent files:"
 	MsgProcessingHasFinished = "Processing has finished."
 	MsgFTimeTakenSeconds     = "Time taken: %f seconds."
 	MsgFBytesRead            = "Bytes read: %d."

@@ -13,10 +13,11 @@ import (
 const ToolName = "Indexer"
 
 func main() {
+	showIntro()
+
 	args, err := cla.NewCommandLineArguments()
 	if err != nil {
 		log.Println(err)
-		showIntro()
 		showUsage()
 		os.Exit(1)
 		return

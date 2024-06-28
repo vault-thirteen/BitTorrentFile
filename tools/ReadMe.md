@@ -17,3 +17,9 @@ content recursively, i.e. it is able to read files sitting inside subfolders of
 a folder.
 
 To see how to use the tool, start it without command line arguments.
+
+### Installation
+
+```
+go install "github.com/vault-thirteen/BitTorrentFile/tools/indexer"
+```
