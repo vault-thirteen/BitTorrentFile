@@ -26,7 +26,7 @@ func processFile(args *cla.CommandLineArguments) (stat *Statistics, err error) {
 
 func processFolder(args *cla.CommandLineArguments) (stat *Statistics, err error) {
 	var files []string
-	files, err = file.GetFolderFiles(args.ObjectPath)
+	err = file.GetFolderFiles(args.ObjectPath, true, &files)
 	if err != nil {
 		return nil, err
 	}

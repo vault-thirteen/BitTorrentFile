@@ -14,15 +14,23 @@ const (
 	ErrFFileExtensionUnsupported = "file extension unsupported: %s"
 )
 
-func GetFolderFiles(folder string) (files []string, err error) {
+func GetFolderFiles(folder string, readSubFolders bool, outFiles *[]string) (err error) {
 	var entries []os.DirEntry
 	entries, err = os.ReadDir(folder)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, entry := range entries {
 		if entry.IsDir() {
+			if readSubFolders {
+				subPath := filepath.Join(folder, entry.Name())
+				err = GetFolderFiles(subPath, readSubFolders, outFiles)
+				if err != nil {
+					return err
+				}
+			}
+
 			continue
 		}
 
@@ -32,8 +40,8 @@ func GetFolderFiles(folder string) (files []string, err error) {
 		}
 
 		fileNameFull := filepath.Join(folder, entry.Name())
-		files = append(files, fileNameFull)
+		*outFiles = append(*outFiles, fileNameFull)
 	}
 
-	return files, nil
+	return nil
 }
