@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	btf "github.com/vault-thirteen/BitTorrentFile"
-	"github.com/vault-thirteen/BitTorrentFile/models"
 )
 
 // Settings.
@@ -44,9 +43,7 @@ func openFile() (err error) {
 
 	fmt.Println(fmt.Sprintf("Source: %s.", tf.Source.GetPath()))
 	fmt.Println(fmt.Sprintf("Version: %s.", tf.Version))
-	if tf.Version == models.Version_Two {
-		fmt.Println(fmt.Sprintf("Name: %s.", tf.Name))
-	}
+	fmt.Println(fmt.Sprintf("Name: %s.", tf.Name))
 	fmt.Println(fmt.Sprintf("BTIH: %s.", tf.BTIH.Text))
 	fmt.Println(fmt.Sprintf("BTIH V2: %s.", tf.BTIH2.Text))
 	fmt.Println(fmt.Sprintf("%d file(s):", filesCount))

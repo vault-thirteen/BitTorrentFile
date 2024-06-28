@@ -82,11 +82,9 @@ func (tf *BitTorrentFile) Open() (err error) {
 		return errors.New(e.ErrVersionIsUnsupported)
 	}
 
-	if tf.Version == models.Version_Two {
-		err = tf.readName()
-		if err != nil {
-			return err
-		}
+	err = tf.readName()
+	if err != nil {
+		return err
 	}
 
 	err = tf.calculateBtih()
@@ -239,10 +237,6 @@ func (tf *BitTorrentFile) readVersion() (err error) {
 
 // readName reads name of the BitTorrent.
 func (tf *BitTorrentFile) readName() (err error) {
-
-	if tf.Version != models.Version_Two {
-		return errors.New(e.ErrVersionIsUnsupported)
-	}
 
 	// Get the 'info' section from the decoded object.
 	var infoSection models.Dictionary
@@ -583,6 +577,14 @@ func (tf *BitTorrentFile) readFilesV2(infoSection models.Dictionary) (files []mo
 	err = walkFileTreeP2(rootNode, &files, route)
 	if err != nil {
 		return nil, err
+	}
+
+	if (len(files) == 1) && (len(files[0].Path) == 1) && (files[0].Path[0] == tf.Name) {
+		// This is a single-file torrent, where name is equal to path.
+	} else {
+		for i := range files {
+			files[i].Path = append([]string{tf.Name}, files[i].Path...)
+		}
 	}
 
 	return files, nil
