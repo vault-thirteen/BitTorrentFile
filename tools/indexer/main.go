@@ -4,27 +4,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
+	"time"
 
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"
-	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/file"
 	ver "github.com/vault-thirteen/auxie/Versioneer"
 )
 
-const UsageHint = `Usage:
-	[ObjectType] [ObjectPath] [Output]
-
-Examples:
-	indexer.exe File "123.torrent" "index.csv" 
-	indexer.exe Folder "torrents" "index.csv"
-
-Notes:
-	Possible object types: File, Folder or Directory.
-	Letter case is not important.
-	Change directory (CD) to a working directory before usage.`
-
-const MsgFProcessingFiles = "Processing %d files."
+const ToolName = "Indexer"
 
 func main() {
 	args, err := cla.NewCommandLineArguments()
@@ -36,19 +22,28 @@ func main() {
 		return
 	}
 
+	timeStart := time.Now()
+	var stat *Statistics
+
 	switch args.ObjectType.ID() {
 	case cla.ObjectTypeId_File:
-		err = processFile(args)
+		stat, err = processFile(args)
 		mustBeNoError(err)
 
 	case cla.ObjectTypeId_Folder:
-		err = processFolder(args)
+		stat, err = processFolder(args)
 		mustBeNoError(err)
 
 	default:
 		err = fmt.Errorf(cla.ErrFObjectTypeUnknown, args.ObjectType.ID())
 		mustBeNoError(err)
 	}
+
+	// Résumé.
+	stat.TimeStart = timeStart
+	stat.TimeDuration = time.Now().Sub(stat.TimeStart)
+	err = showResume(stat)
+	mustBeNoError(err)
 }
 
 func mustBeNoError(err error) {
@@ -60,37 +55,11 @@ func mustBeNoError(err error) {
 func showIntro() {
 	versioneer, err := ver.New()
 	mustBeNoError(err)
-	versioneer.ShowIntroText("indexer")
+	versioneer.ShowIntroText(ToolName)
 	versioneer.ShowComponentsInfoText()
 	fmt.Println()
 }
 
 func showUsage() {
 	fmt.Println(UsageHint)
-}
-
-func processFile(args *cla.CommandLineArguments) (err error) {
-	fileExt := strings.ToLower(filepath.Ext(args.ObjectPath))
-	if fileExt != file.FileExtension_Torrent {
-		return fmt.Errorf(file.ErrFFileExtensionUnsupported, fileExt)
-	}
-
-	var files = []string{args.ObjectPath}
-	return processFiles(files, args.Output)
-}
-
-func processFolder(args *cla.CommandLineArguments) (err error) {
-	var files []string
-	files, err = file.GetFolderFiles(args.ObjectPath)
-	if err != nil {
-		return err
-	}
-
-	return processFiles(files, args.Output)
-}
-
-func processFiles(files []string, output string) (err error) {
-	fmt.Println(fmt.Sprintf(MsgFProcessingFiles, len(files)))
-
-	return nil //TODO
 }
