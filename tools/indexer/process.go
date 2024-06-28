@@ -57,6 +57,11 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 	}()
 
 	csvWriter := csv.NewWriter(csvFile)
+	csvWriter.UseCRLF = true
+	// Unfortunately standard CSV library in Golang is absolutely useless.
+	// It does not add quotes to strings when writes them into a CSV file !!!
+	// TODO: ...
+
 	defer csvWriter.Flush()
 
 	err = csvWriter.Write(getCsvFileHeader())
