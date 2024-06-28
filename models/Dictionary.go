@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
+	ft "github.com/vault-thirteen/BitTorrentFile/models/file-tree"
 	"github.com/vault-thirteen/BitTorrentFile/models/hash"
 	iface "github.com/vault-thirteen/BitTorrentFile/models/interface"
 	b "github.com/vault-thirteen/bencode"
@@ -13,6 +14,20 @@ import (
 
 // Dictionary is a "bencoded" dictionary.
 type Dictionary []b.DictionaryItem
+
+// InterfaceAsDictionary tries to interpret an interface as a dictionary.
+func InterfaceAsDictionary(x any) (d Dictionary, err error) {
+	// Direct type cast into 'Dictionary' type is not allowed in Go language.
+	// So, we are doing it in two steps:
+	//	1. Cast into an array of 'DictionaryItem's;
+	//	2. Cast into the 'Dictionary' type.
+	dictionaryItems, ok := x.([]b.DictionaryItem)
+	if !ok {
+		return nil, errors.New(e.ErrTypeAssertion)
+	}
+
+	return dictionaryItems, nil
+}
 
 // FindDictionaryItem tries to search for a dictionary entry (item) specified
 // by its key (name). On success, the entry is returned.
@@ -88,8 +103,37 @@ func (d *Dictionary) GetFieldValueAsStringArray(fieldName string) (fv []string, 
 	return iface.InterfaceAsStringArray(tmp)
 }
 
-// GuessFormat tries to guess the format of the dictionary. This method is
+// GuessVersion tries to guess the version of the dictionary. This method is
 // used only for the 'info' section dictionary.
+func (d *Dictionary) GuessVersion() (version Version, err error) {
+	var isVersionFieldPresent = d.IsFieldPresent(FieldMetaVersion)
+
+	// We can only make assumptions about the version when it is not set.
+	// The BitTorrent file format is crazy.
+	if !isVersionFieldPresent {
+		return Version_One, nil
+	}
+
+	var versionNumber int
+	versionNumber, err = d.GetFieldValueAsInt(FieldMetaVersion)
+	if err != nil {
+		return Version_Unknown, err
+	}
+
+	switch versionNumber {
+	case 2:
+		// The BitTorrent Protocol Specification v2
+		// http://bittorrent.org/beps/bep_0052.html
+		return Version_Two, nil
+
+	default:
+		return Version_Unknown, nil
+	}
+}
+
+// GuessFormat tries to guess the format of the dictionary. This method is
+// used only for the 'info' section dictionary and when the BitTorrent file is
+// of the original first version.
 func (d *Dictionary) GuessFormat() (format InfoSectionFormat) {
 	var isLengthFieldPresent = d.IsFieldPresent(FieldLength)
 	var isFilesFieldPresent = d.IsFieldPresent(FieldFiles)
@@ -267,4 +311,65 @@ func (d *Dictionary) ReadFilePath(isf InfoSectionFormat) (filePath []string, err
 	default:
 		return nil, errors.New(e.ErrInfoSectionFormatIsUnknown)
 	}
+}
+
+// IsFileParametersNodeV2 checks whether the dictionary is a special dictionary
+// used for storing file parameters. This approach proves that BitTorrent file
+// format is a nightmare.
+func (d *Dictionary) IsFileParametersNodeV2() bool {
+	dic := *d
+
+	if len(dic) != 1 {
+		return false
+	}
+
+	dicItemName := dic[0].Key
+	if len(dicItemName) == 0 {
+		return true
+	}
+
+	return false
+}
+
+// FillFileParameters fills (writes) file parameters into the specified file
+// tree node pointer. The 'outNode' parameter must be a valid pointer. Current
+// dictionary is a dictionary which has an item containing the special
+// dictionary with file parameters.
+func (d *Dictionary) FillFileParameters(outNode *ft.FileTreeNode) (err error) {
+	var paramsDic Dictionary
+	paramsDic, err = InterfaceAsDictionary((*d)[0].Value)
+	if err != nil {
+		return err
+	}
+
+	outNode.IsFile = true
+
+	// 1. File size.
+	outNode.Size, err = paramsDic.GetFieldValueAsInt(FieldLength)
+	if err != nil {
+		return err
+	}
+
+	// 2. Optional check sums.
+	_, outNode.HashSum.Crc32, err = paramsDic.ReadOptionalFileCrc32()
+	if err != nil {
+		return err
+	}
+
+	_, outNode.HashSum.Md5, err = paramsDic.ReadOptionalFileMd5()
+	if err != nil {
+		return err
+	}
+
+	_, outNode.HashSum.Sha1, err = paramsDic.ReadOptionalFileSha1()
+	if err != nil {
+		return err
+	}
+
+	_, outNode.HashSum.Sha256, err = paramsDic.ReadOptionalFileSha256()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

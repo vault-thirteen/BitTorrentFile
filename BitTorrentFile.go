@@ -6,6 +6,7 @@ import (
 
 	"github.com/vault-thirteen/BitTorrentFile/models"
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
+	ft "github.com/vault-thirteen/BitTorrentFile/models/file-tree"
 	"github.com/vault-thirteen/BitTorrentFile/models/generic"
 	"github.com/vault-thirteen/BitTorrentFile/models/hash"
 	iface "github.com/vault-thirteen/BitTorrentFile/models/interface"
@@ -23,7 +24,11 @@ type BitTorrentFile struct {
 	// Version of the BitTorrent File.
 	// It can be numeric or textual while there are some crazy things such as
 	// the 'Hybrid' file format.
-	Version string
+	Version models.Version
+
+	// BitTorrent name.
+	// This field is supported by the second BitTorrent protocol specification.
+	Name string
 
 	// BitTorrent Info Hash.
 	// The original first version of info hash.
@@ -66,6 +71,22 @@ func (tf *BitTorrentFile) Open() (err error) {
 	tf.RawData, err = tf.Source.Parse(true)
 	if err != nil {
 		return err
+	}
+
+	err = tf.readVersion()
+	if err != nil {
+		return err
+	}
+
+	if tf.Version == models.Version_Unknown {
+		return errors.New(e.ErrVersionIsUnsupported)
+	}
+
+	if tf.Version == models.Version_Two {
+		err = tf.readName()
+		if err != nil {
+			return err
+		}
 	}
 
 	err = tf.calculateBtih()
@@ -113,16 +134,14 @@ func (tf *BitTorrentFile) GetSection(sectionName string) (result any, err error)
 	}
 
 	// Get the dictionary.
-	var dictionary []b.DictionaryItem
-	var ok bool
-	dictionary, ok = tf.RawData.RawObject.([]b.DictionaryItem)
-	if !ok {
-		return nil, errors.New(e.ErrTypeAssertion)
+	var dictionary models.Dictionary
+	dictionary, err = models.InterfaceAsDictionary(tf.RawData.RawObject)
+	if err != nil {
+		return nil, err
 	}
 
 	// Get the section from the decoded object.
-	var dictItem b.DictionaryItem
-	for _, dictItem = range dictionary {
+	for _, dictItem := range dictionary {
 		if string(dictItem.Key) == sectionName {
 			return dictItem.Value, nil
 		}
@@ -133,21 +152,13 @@ func (tf *BitTorrentFile) GetSection(sectionName string) (result any, err error)
 
 // GetInfoSection gets an 'info' section from the object.
 func (tf *BitTorrentFile) GetInfoSection() (is models.Dictionary, err error) {
-	var tmp any
-	tmp, err = tf.GetSection(models.SectionInfo)
+	var x any
+	x, err = tf.GetSection(models.SectionInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	var ok bool
-	var tmp2 []b.DictionaryItem
-	tmp2, ok = tmp.([]b.DictionaryItem)
-	if !ok {
-		return nil, errors.New(e.ErrTypeAssertion)
-	}
-
-	is = (models.Dictionary)(tmp2)
-	return is, nil
+	return models.InterfaceAsDictionary(x)
 }
 
 // GetSectionValueAsInt reads section value and returns it as int.
@@ -194,6 +205,58 @@ func (tf *BitTorrentFile) GetSectionValueAsArrayOfStringArrays(sectionName strin
 	}
 
 	return iface.InterfaceAsArrayOfStringArrays(section)
+}
+
+// readVersion tries to read version of the BitTorrent file.
+func (tf *BitTorrentFile) readVersion() (err error) {
+
+	// Get the 'info' section from the decoded object.
+	var infoSection models.Dictionary
+	infoSection, err = tf.GetInfoSection()
+	if err != nil {
+		return err
+	}
+
+	var ver models.Version
+	ver, err = infoSection.GuessVersion()
+	if err != nil {
+		return err
+	}
+
+	switch ver {
+	case models.Version_One:
+		tf.Version = models.Version_One
+
+	case models.Version_Two:
+		tf.Version = models.Version_Two
+
+	default:
+		tf.Version = models.Version_Unknown
+	}
+
+	return nil
+}
+
+// readName reads name of the BitTorrent.
+func (tf *BitTorrentFile) readName() (err error) {
+
+	if tf.Version != models.Version_Two {
+		return errors.New(e.ErrVersionIsUnsupported)
+	}
+
+	// Get the 'info' section from the decoded object.
+	var infoSection models.Dictionary
+	infoSection, err = tf.GetInfoSection()
+	if err != nil {
+		return err
+	}
+
+	tf.Name, err = infoSection.GetFieldValueAsString(models.FieldName)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // calculateBtih calculates the BitTorrent Info Hash (BTIH) check sums.
@@ -323,35 +386,47 @@ func (tf *BitTorrentFile) readEncoding() (err error) {
 
 // readFiles reads the list of files.
 func (tf *BitTorrentFile) readFiles() (err error) {
-	//TODO: V1
-	//TODO: V2 (?)
-
-	// Guess the format of 'info' section.
-
 	var infoSection models.Dictionary
 	infoSection, err = tf.GetInfoSection()
 	if err != nil {
 		return err
 	}
 
-	var infoSectionFormat models.InfoSectionFormat
-	infoSectionFormat = infoSection.GuessFormat()
+	switch tf.Version {
+	case models.Version_One:
+		{
+			// Guess the format of 'info' section.
+			var infoSectionFormat models.InfoSectionFormat
+			infoSectionFormat = infoSection.GuessFormat()
 
-	switch infoSectionFormat {
-	case models.InfoSectionFormat_SingleFile:
-		tf.Files, err = tf.readSingleFile(infoSection)
-		if err != nil {
-			return err
+			switch infoSectionFormat {
+			case models.InfoSectionFormat_SingleFile:
+				tf.Files, err = tf.readSingleFile(infoSection)
+				if err != nil {
+					return err
+				}
+
+			case models.InfoSectionFormat_MultiFile:
+				tf.Files, err = tf.readMultipleFiles(infoSection)
+				if err != nil {
+					return err
+				}
+
+			default:
+				return errors.New(e.ErrInfoSectionFormatIsUnknown)
+			}
 		}
 
-	case models.InfoSectionFormat_MultiFile:
-		tf.Files, err = tf.readMultipleFiles(infoSection)
-		if err != nil {
-			return err
+	case models.Version_Two:
+		{
+			tf.Files, err = tf.readFilesV2(infoSection)
+			if err != nil {
+				return err
+			}
 		}
 
 	default:
-		return errors.New(e.ErrInfoSectionFormatIsUnknown)
+		return errors.New(e.ErrVersionIsUnsupported)
 	}
 
 	return nil
@@ -423,17 +498,13 @@ func (tf *BitTorrentFile) readMultipleFiles(infoSection models.Dictionary) (file
 	}
 
 	files = make([]models.File, 0, len(buf2))
-	var buf3 []b.DictionaryItem
 	var filesDictionary models.Dictionary
 	var f models.File
-
 	for _, x := range buf2 {
-		buf3, ok = x.([]b.DictionaryItem)
-		if !ok {
-			return nil, errors.New(e.ErrTypeAssertion)
+		filesDictionary, err = models.InterfaceAsDictionary(x)
+		if err != nil {
+			return nil, err
 		}
-
-		filesDictionary = buf3
 
 		// 1. Read the file size.
 		f.Size, err = filesDictionary.ReadFileSize()
@@ -477,4 +548,119 @@ func (tf *BitTorrentFile) readMultipleFiles(infoSection models.Dictionary) (file
 	}
 
 	return files, nil
+}
+
+// readFilesV2 reads files' data of the BitTorrent file having version 2.
+func (tf *BitTorrentFile) readFilesV2(infoSection models.Dictionary) (files []models.File, err error) {
+
+	// 1. Read the file tree root.
+	var buf1 any
+	buf1, err = infoSection.GetFieldValue(models.FieldFileTree)
+	if err != nil {
+		return nil, err
+	}
+
+	var fileTreeDic models.Dictionary
+	fileTreeDic, err = models.InterfaceAsDictionary(buf1)
+	if err != nil {
+		return nil, err
+	}
+
+	var rootNode = &ft.FileTreeNode{
+		IsRoot:   true,
+		Name:     tf.Name,
+		Children: make([]*ft.FileTreeNode, 0),
+	}
+
+	// 2. Recursively read tree nodes and get files from the tree.
+	err = walkFileTreeP1(fileTreeDic, rootNode)
+	if err != nil {
+		return nil, err
+	}
+
+	files = make([]models.File, 0)
+	var route = ft.NewNodeRoute(rootNode)
+	err = walkFileTreeP2(rootNode, &files, route)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+// walkFileTreeP1 is a first pass of a recursive file tree walker. It creates a
+// tree of nodes. The results may be obtained from the first parent node, i.e.
+// from the root node.
+func walkFileTreeP1(fileNodeDic models.Dictionary, parentNode *ft.FileTreeNode) (err error) {
+	var curNode *ft.FileTreeNode
+	for _, x := range fileNodeDic {
+		curNode = &ft.FileTreeNode{
+			Parent: parentNode,
+			Name:   string(x.Key),
+		}
+
+		var children models.Dictionary
+		children, err = models.InterfaceAsDictionary(x.Value)
+		if err != nil {
+			return err
+		}
+
+		// Corner node ?
+		if children.IsFileParametersNodeV2() {
+			err = children.FillFileParameters(curNode)
+			if err != nil {
+				return err
+			}
+
+			parentNode.AppendChild(curNode)
+			continue
+		}
+
+		var xDic models.Dictionary
+		xDic, err = models.InterfaceAsDictionary(x.Value)
+		if err != nil {
+			return err
+		}
+
+		curNode.IsDirectory = true
+		parentNode.AppendChild(curNode)
+
+		err = walkFileTreeP1(xDic, curNode)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// walkFileTreeP2 is a second pass of a recursive file tree walker. It reads
+// files from the tree and writes them into the pointer. The 'files' argument
+// must be a valid pointer. The 'route' argument is an incremented route from
+// a root node to the current node.
+func walkFileTreeP2(parentNode *ft.FileTreeNode, files *[]models.File, route ft.NodeRoute) (err error) {
+	for _, x := range parentNode.Children {
+		route.AddNode(x)
+
+		if x.IsFile {
+			file := models.File{
+				Size:    x.Size,
+				HashSum: x.HashSum,
+				Path:    route.ConvertToPath(),
+			}
+
+			*files = append(*files, file)
+			route.RemoveNode()
+			continue
+		}
+
+		if x.IsDirectory {
+			err = walkFileTreeP2(x, files, route)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
