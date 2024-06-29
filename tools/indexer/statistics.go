@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Statistics stores statistical data about program execution.
 type Statistics struct {
 	TimeStart    time.Time
 	TimeDuration time.Duration
@@ -23,6 +24,7 @@ type Statistics struct {
 	SelfCheckErroredFiles []string
 }
 
+// showResume shows the results of the program execution.
 func showResume(stat *Statistics) (err error) {
 	fmt.Println(MsgProcessingHasFinished)
 	fmt.Println(fmt.Sprintf(MsgFTimeTakenSeconds, stat.TimeDuration.Seconds()))
@@ -64,6 +66,7 @@ func showResume(stat *Statistics) (err error) {
 	return nil
 }
 
+// getFileSize reads the size of a file.
 func getFileSize(file string) (size int, err error) {
 	var fi os.FileInfo
 	fi, err = os.Stat(file)
@@ -74,6 +77,8 @@ func getFileSize(file string) (size int, err error) {
 	return int(fi.Size()), nil
 }
 
+// printList prints a list of strings adding a space delimiter and a '-' mark
+// before each line.
 func printList(list []string) {
 	for _, s := range list {
 		fmt.Println(fmt.Sprintf("  - %s", s))

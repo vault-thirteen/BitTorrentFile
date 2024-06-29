@@ -1,3 +1,6 @@
+--// This is a template command (query) used to create a table for storing //--
+--// the results of the indexer tool. It is written for MySQL SQL dialect. //--
+
 CREATE TABLE test.BTFiles (
 	Id BIGINT auto_increment NOT NULL,
 	TorrentFile VARCHAR(256) NOT NULL,

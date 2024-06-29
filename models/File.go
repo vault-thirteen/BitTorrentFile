@@ -21,6 +21,7 @@ type File struct {
 	HashSum hash.FileHash
 }
 
+// SanitiseFilePath sanitise the file path by removing forbidden elements.
 func (f *File) SanitiseFilePath() {
 	buf := make([]string, 0, len(f.Path))
 

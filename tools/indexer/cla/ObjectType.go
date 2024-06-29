@@ -21,11 +21,14 @@ const (
 	ErrFObjectTypeUnknown = "object type is unknown: %v"
 )
 
+// ObjectType is a type of the processed object.
+// It can be either a file or a folder.
 type ObjectType struct {
 	id   byte
 	name string
 }
 
+// NewObjectType is a constructor of the ObjectType object.
 func NewObjectType(objectTypeName string) (objectType *ObjectType, err error) {
 	switch strings.ToUpper(objectTypeName) {
 	case ObjectTypeName_File:
@@ -51,10 +54,12 @@ func NewObjectType(objectTypeName string) (objectType *ObjectType, err error) {
 	}
 }
 
+// ID returns the numeric identifier of the object type.
 func (ot *ObjectType) ID() (id byte) {
 	return ot.id
 }
 
+// Name returns the textual identifier of the object type.
 func (ot *ObjectType) Name() (name string) {
 	return ot.name
 }

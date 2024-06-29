@@ -14,6 +14,9 @@ const (
 	ErrFFileExtensionUnsupported = "file extension unsupported: %s"
 )
 
+// GetFolderFiles reads file names that are sittings inside the specified
+// folder. File names are complemented with paths. A special flag enables
+// recursive search into sub-folders.
 func GetFolderFiles(folder string, readSubFolders bool, outFiles *[]string) (err error) {
 	var entries []os.DirEntry
 	entries, err = os.ReadDir(folder)
@@ -46,6 +49,7 @@ func GetFolderFiles(folder string, readSubFolders bool, outFiles *[]string) (err
 	return nil
 }
 
+// CleanFilePath is a "fixed" version of the standard 'filepath.Clean' method.
 func CleanFilePath(path string) (cp string) {
 	cp = filepath.Clean(path)
 

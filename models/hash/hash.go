@@ -4,11 +4,10 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"hash/crc32"
 	"strings"
-
-	"github.com/vault-thirteen/BitTorrentFile/models/endianness"
 )
 
 // CalculateCrc32 calculates the CRC-32 check sum and returns it as a
@@ -16,7 +15,7 @@ import (
 func CalculateCrc32(data []byte) (resultAsBytes Crc32Sum, resultAsText string) {
 	var buf1 = crc32.ChecksumIEEE(data)
 	var buf2 = make([]byte, 4)
-	endianness.GetNativeEndianness().PutUint32(buf2, buf1)
+	binary.BigEndian.PutUint32(buf2, buf1)
 	resultAsBytes = [4]byte(buf2)
 	resultAsText = strings.ToUpper(hex.EncodeToString(resultAsBytes[:]))
 	return resultAsBytes, resultAsText

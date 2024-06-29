@@ -10,8 +10,7 @@ import (
 	ver "github.com/vault-thirteen/auxie/Versioneer"
 )
 
-const ToolName = "Indexer"
-
+// Program's entry point.
 func main() {
 	showIntro()
 
@@ -19,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 		showUsage()
-		os.Exit(1)
+		os.Exit(OsExitCodeOnCLAError)
 		return
 	}
 
@@ -47,12 +46,14 @@ func main() {
 	mustBeNoError(err)
 }
 
+// mustBeNoError exits program on error.
 func mustBeNoError(err error) {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 }
 
+// showIntro shows introductory information about the program.
 func showIntro() {
 	versioneer, err := ver.New()
 	mustBeNoError(err)
@@ -61,6 +62,7 @@ func showIntro() {
 	fmt.Println()
 }
 
+// showUsage prints the information about how to use the program.
 func showUsage() {
 	fmt.Println(UsageHint)
 }

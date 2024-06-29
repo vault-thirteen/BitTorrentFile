@@ -1,3 +1,5 @@
 package csv
 
-//TODO: Write tests and move this package to 'auxie'.
+//TODO: Tests.
+
+//TODO: Move this package to 'auxie' repository.

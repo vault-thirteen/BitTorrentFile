@@ -22,3 +22,5 @@ func GetNativeEndianness() binary.ByteOrder {
 		panic("native endianness is unknown")
 	}
 }
+
+//TODO: Move this package to 'auxie' repository.

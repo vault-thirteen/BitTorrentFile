@@ -22,6 +22,9 @@ type BitTorrentFile struct {
 	RawData *b.DecodedObject
 
 	// IsBroken is a marker of a broken file.
+	// Some stupid people think that specifications were created for fools and
+	// that they [these stupid people] are better than other people. We mark
+	// such idiots with this flag.
 	IsBroken bool
 
 	// Version of the BitTorrent File.
@@ -311,6 +314,11 @@ func (tf *BitTorrentFile) readAnnounceUrls() (err error) {
 		}
 
 		tf.AnnounceUrlMain = *mainAnnounceUrl
+
+		// Additional check for idiots.
+		if tf.AnnounceUrlMain.IsBroken {
+			tf.IsBroken = true
+		}
 	}
 
 	// 2. Get the optional 'announce-list' section from the decoded object.
@@ -338,6 +346,15 @@ func (tf *BitTorrentFile) readAnnounceUrls() (err error) {
 		tf.AnnounceUrlsAux = append(tf.AnnounceUrlsAux, aa)
 	}
 
+	// Additional check for idiots.
+	for _, xx := range tf.AnnounceUrlsAux {
+		for _, x := range xx {
+			if x.IsBroken {
+				tf.IsBroken = true
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -360,6 +377,8 @@ func (tf *BitTorrentFile) readCreationTime() (err error) {
 	if err.Error() != e.ErrTypeAssertion {
 		return err
 	}
+
+	tf.IsBroken = true
 
 	var s string
 	s, err = tf.GetSectionValueAsString(models.SectionCreationDate)

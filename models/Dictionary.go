@@ -53,6 +53,8 @@ func (d *Dictionary) IsFieldPresent(fieldName string) (isFieldPresent bool) {
 }
 
 // GetFieldValue returns a dictionary's entry specified by its key (name).
+// The difference between this method and 'FindDictionaryItem' is that the
+// latter is a more "low-level" function and is used by other functions.
 func (d *Dictionary) GetFieldValue(fieldName string) (fv any, err error) {
 	var field *b.DictionaryItem
 	field, err = d.FindDictionaryItem(fieldName)

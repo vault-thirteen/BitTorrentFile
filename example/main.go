@@ -8,6 +8,10 @@ import (
 	btf "github.com/vault-thirteen/BitTorrentFile"
 )
 
+// This is a simple example how to use the library.
+// You can study this file in debugger and try changing the file name to other
+// values (such as FileName2, FileName3 or FileName4) and see the results.
+
 // Settings.
 const (
 	ExampleFolder = "example"
@@ -31,7 +35,7 @@ func mustBeNoError(err error) {
 
 func openFile() (err error) {
 	var tf = btf.NewBitTorrentFile(
-		filepath.Join(ExampleFolder, DataFolder, FileName4),
+		filepath.Join(ExampleFolder, DataFolder, FileName1),
 	)
 
 	err = tf.Open()
@@ -50,6 +54,7 @@ func openFile() (err error) {
 	for _, file := range tf.Files {
 		fmt.Println(fmt.Sprintf("\t - %v (%d bytes)", file.Path, file.Size))
 	}
+	fmt.Println(fmt.Sprintf("Is broken: %t.", tf.IsBroken))
 
 	return nil
 }

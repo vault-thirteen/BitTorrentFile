@@ -5,26 +5,35 @@ import (
 	"strings"
 )
 
+// AnnounceAddress is an announce URL.
 type AnnounceAddress struct {
-	URL     *url.URL
-	RawData string
+	URL      *url.URL
+	RawData  string
+	IsBroken bool
 }
 
 // NewAnnounceAddressFromString parses the string into the object of
 // AnnounceAddress type.
 func NewAnnounceAddressFromString(s string) (aa *AnnounceAddress, err error) {
 	aa = &AnnounceAddress{
-		// Some bastards place "\r" at the end of URL string.
-		// Such idiots deserve to be fools forever.
-		RawData: strings.TrimSpace(s),
+		RawData:  s,
+		IsBroken: false,
 	}
 
 	aa.URL, err = url.Parse(aa.RawData)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return aa, nil
 	}
 
-	return aa, nil
+	// Some bastards place "\r" at the end of URL string.
+	// Such idiots deserve to be fools forever.
+	aa.URL, err = url.Parse(strings.TrimSpace(aa.RawData))
+	if err == nil {
+		aa.IsBroken = true
+		return aa, nil
+	}
+
+	return nil, err
 }
 
 // NewAnnounceAddressListFromStringArray parses the string array into the array

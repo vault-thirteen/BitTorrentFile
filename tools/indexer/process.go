@@ -15,6 +15,7 @@ import (
 	"github.com/vault-thirteen/bencode"
 )
 
+// processFile processes a single file.
 func processFile(args *cla.CommandLineArguments) (stat *Statistics, err error) {
 	fileExt := strings.ToLower(filepath.Ext(args.ObjectPath))
 	if fileExt != file.FileExtension_Torrent {
@@ -25,6 +26,7 @@ func processFile(args *cla.CommandLineArguments) (stat *Statistics, err error) {
 	return processFiles(files, args.Output)
 }
 
+// processFolder processes files of a folder.
 func processFolder(args *cla.CommandLineArguments) (stat *Statistics, err error) {
 	var files []string
 	err = file.GetFolderFiles(args.ObjectPath, true, &files)
@@ -35,6 +37,7 @@ func processFolder(args *cla.CommandLineArguments) (stat *Statistics, err error)
 	return processFiles(files, args.Output)
 }
 
+// processFiles processes specified files.
 func processFiles(files []string, output string) (stat *Statistics, err error) {
 	fmt.Println(fmt.Sprintf(MsgFProcessingFiles, len(files)))
 
@@ -78,25 +81,36 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 
 		torrentFileInfo, err = getTorrentFileInfo(btFile)
 		if err != nil {
-			// Self-check error means that file is damaged.
-			// E.g. it may have additional data below the official format space.
-			// It may be an exploit of some bug or something else.
+			// Self-check error means that file is damaged. E.g. it may have
+			// additional data below the official format space. Such behaviour
+			// is popular among stupid hackers or people who try to edit
+			// BitTorrent files manually without proper knowledge how to do it.
+			// It may also be an exploit of some bug or something else. We
+			// advise to skip processing of such files.
 			if err.Error() == bencode.ErrSelfCheck {
 				stat.SelfCheckErrorsCount++
 				stat.SelfCheckErroredFiles = append(stat.SelfCheckErroredFiles, btFile)
 				log.Println(err.Error())
-				continue
+
+				if SkipHackedFiles {
+					continue
+				}
 			}
 
 			// On other errors we stop.
 			return nil, err
 		}
 
+		// Some idiots like to violate specifications. Fools will always be
+		// fools. You can try processing such files while it is not harmful.
 		if torrentFileInfo.IsBroken {
 			stat.BrokenFilesCount++
 			stat.BrokenFiles = append(stat.BrokenFiles, btFile)
 			log.Println(ErrBrokenFile)
-			continue
+
+			if SkipBrokenFiles {
+				continue
+			}
 		}
 
 		// For each stored file ...
@@ -120,6 +134,8 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 	return stat, nil
 }
 
+// getTorrentFileInfo parses the BitTorrent file and returns information about
+// it.
 func getTorrentFileInfo(btFile string) (tf *btf.BitTorrentFile, err error) {
 	tf = btf.NewBitTorrentFile(btFile)
 

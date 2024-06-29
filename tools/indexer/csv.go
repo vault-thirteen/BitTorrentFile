@@ -32,10 +32,12 @@ const (
 	CsvColumn5 = "Stored size"
 )
 
+// getCsvFileHeader returns the header line for the CSV table.
 func getCsvFileHeader() []any {
 	return []any{CsvColumn1, CsvColumn2, CsvColumn3, CsvColumn4, CsvColumn5}
 }
 
+// prepareCsvLine returns the line (row) for the CSV table.
 func prepareCsvLine(torrentFilePath string, storedFileInfo models.File) (line []any, err error) {
 	torrentFileFolder, torrentFileName := filepath.Split(torrentFilePath)
 	torrentFileFolder = escapeBackSlashes(file.CleanFilePath(torrentFileFolder))
@@ -53,7 +55,8 @@ func prepareCsvLine(torrentFilePath string, storedFileInfo models.File) (line []
 	return []any{torrentFileBaseName, torrentFileFolder, storedFileName, storedFileFolder, storedFileInfo.Size}, nil
 }
 
-// escapeBackSlashes escapes back slashes.
+// escapeBackSlashes escapes all the backward slashes. Some SQL tools, such as
+// DBeaver, require backslashes to be escaped in CSV files.
 func escapeBackSlashes(s string) string {
 	return strings.ReplaceAll(s, `\`, `\\`)
 }

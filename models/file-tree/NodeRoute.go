@@ -10,6 +10,9 @@ func NewNodeRoute(rootNode *FileTreeNode) (nr NodeRoute) {
 }
 
 // ConvertToPath composes an array of path elements from a route.
+// Due to the specifics of how the 'name' section is used in BitTorrent files
+// of version 2, we must ignore the root node and process its value later in
+// order to avoid duplicate names in the path.
 func (nr *NodeRoute) ConvertToPath() (path []string) {
 	path = make([]string, 0, len(*nr))
 
