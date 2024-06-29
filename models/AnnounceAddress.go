@@ -1,6 +1,9 @@
 package models
 
-import "net/url"
+import (
+	"net/url"
+	"strings"
+)
 
 type AnnounceAddress struct {
 	URL     *url.URL
@@ -11,7 +14,9 @@ type AnnounceAddress struct {
 // AnnounceAddress type.
 func NewAnnounceAddressFromString(s string) (aa *AnnounceAddress, err error) {
 	aa = &AnnounceAddress{
-		RawData: s,
+		// Some bastards place "\r" at the end of URL string.
+		// Such idiots deserve to be fools forever.
+		RawData: strings.TrimSpace(s),
 	}
 
 	aa.URL, err = url.Parse(aa.RawData)
