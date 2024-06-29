@@ -1,12 +1,15 @@
 package main
 
 const (
-	MsgFProcessingFiles      = "Processing %d BitTorrent files:"
-	MsgProcessingHasFinished = "Processing has finished."
-	MsgFTimeTakenSeconds     = "Time taken: %f seconds."
-	MsgFBytesRead            = "Bytes read: %d."
-	MsgFBytesWritten         = "Bytes written: %d."
-	MsgFFilesIndexed         = "Files indexed: %d."
+	MsgFInspectedBTFilesCount = "Inspected BitTorrent files: %d."
+	MsgFProcessingFiles       = "Processing %d BitTorrent files:"
+	MsgProcessingHasFinished  = "Processing has finished."
+	MsgFTimeTakenSeconds      = "Time taken: %f seconds."
+	MsgFBytesRead             = "Bytes read: %d."
+	MsgFBytesWritten          = "Bytes written: %d."
+	MsgFFilesIndexed          = "Files indexed: %d."
+	MsgFFilesBroken           = "Broken files: %d."
+	MsgFSelfCheckErrors       = "Self-check errors: %d."
 )
 
 const UsageHint = `Usage:
@@ -20,3 +23,7 @@ Notes:
 	Possible object types: File, Folder or Directory.
 	Letter case is not important.
 	Change directory (CD) to a working directory before usage.`
+
+const (
+	ErrBrokenFile = "broken file"
+)

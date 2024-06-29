@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	btf "github.com/vault-thirteen/BitTorrentFile"
-	"github.com/vault-thirteen/BitTorrentFile/models"
 	"github.com/vault-thirteen/BitTorrentFile/shitty/csv"
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/file"
 	"github.com/vault-thirteen/auxie/errors"
+	"github.com/vault-thirteen/bencode"
 )
 
 func processFile(args *cla.CommandLineArguments) (stat *Statistics, err error) {
@@ -38,9 +39,11 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 	fmt.Println(fmt.Sprintf(MsgFProcessingFiles, len(files)))
 
 	stat = &Statistics{
-		OutputFileName:    output,
-		ProcessedBTFiles:  make([]string, 0, len(files)),
-		IndexedFilesCount: 0,
+		OutputFileName:        output,
+		ProcessedBTFiles:      make([]string, 0, len(files)),
+		IndexedFilesCount:     0,
+		BrokenFiles:           make([]string, 0, len(files)),
+		SelfCheckErroredFiles: make([]string, 0, len(files)),
 	}
 
 	var csvFile *os.File
@@ -67,20 +70,37 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 	}
 
 	// For each BitTorrent file ...
-	var storedFilesInfo []models.File
+	var torrentFileInfo *btf.BitTorrentFile
 	var csvLine []any
-	var n = 0
 	for _, btFile := range files {
-		n++
-		fmt.Println(fmt.Sprintf("%6d. %s", n, btFile))
+		stat.InspectedBTFilesCount++
+		fmt.Println(fmt.Sprintf("%6d. %s", stat.InspectedBTFilesCount, btFile))
 
-		storedFilesInfo, err = getStoredFilesInfo(btFile)
+		torrentFileInfo, err = getTorrentFileInfo(btFile)
 		if err != nil {
+			// Self-check error means that file is damaged.
+			// E.g. it may have additional data below the official format space.
+			// It may be an exploit of some bug or something else.
+			if err.Error() == bencode.ErrSelfCheck {
+				stat.SelfCheckErrorsCount++
+				stat.SelfCheckErroredFiles = append(stat.SelfCheckErroredFiles, btFile)
+				log.Println(err.Error())
+				continue
+			}
+
+			// On other errors we stop.
 			return nil, err
 		}
 
+		if torrentFileInfo.IsBroken {
+			stat.BrokenFilesCount++
+			stat.BrokenFiles = append(stat.BrokenFiles, btFile)
+			log.Println(ErrBrokenFile)
+			continue
+		}
+
 		// For each stored file ...
-		for _, stFile := range storedFilesInfo {
+		for _, stFile := range torrentFileInfo.Files {
 			csvLine, err = prepareCsvLine(btFile, stFile)
 			if err != nil {
 				return nil, err
@@ -100,13 +120,13 @@ func processFiles(files []string, output string) (stat *Statistics, err error) {
 	return stat, nil
 }
 
-func getStoredFilesInfo(btFile string) (fsi []models.File, err error) {
-	var tf = btf.NewBitTorrentFile(btFile)
+func getTorrentFileInfo(btFile string) (tf *btf.BitTorrentFile, err error) {
+	tf = btf.NewBitTorrentFile(btFile)
 
 	err = tf.Open()
 	if err != nil {
 		return nil, err
 	}
 
-	return tf.Files, nil
+	return tf, nil
 }
