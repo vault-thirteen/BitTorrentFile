@@ -21,6 +21,9 @@ type BitTorrentFile struct {
 	// Decoded raw data.
 	RawData *b.DecodedObject
 
+	// IsBroken is a marker of a broken file.
+	IsBroken bool
+
 	// Version of the BitTorrent File.
 	// It can be numeric or textual while there are some crazy things such as
 	// the 'Hybrid' file format.
@@ -289,16 +292,26 @@ func (tf *BitTorrentFile) readAnnounceUrls() (err error) {
 	var buf1 string
 	buf1, err = tf.GetSectionValueAsString(models.SectionAnnounce)
 	if err != nil {
-		return err
-	}
+		// This section is required, but some stupid people create broken
+		// BitTorrent files on purpose. Such files have the main announce URL
+		// empty, but auxiliary URLs are set. For such crazy cases we mark the
+		// file as broken internally and try to proceed.
+		tf.IsBroken = true
 
-	var mainAnnounceUrl *models.AnnounceAddress
-	mainAnnounceUrl, err = models.NewAnnounceAddressFromString(buf1)
-	if err != nil {
-		return err
-	}
+		tf.AnnounceUrlMain = models.AnnounceAddress{
+			URL:     nil,
+			RawData: "",
+		}
+	} else {
+		// A normal file is processed here.
+		var mainAnnounceUrl *models.AnnounceAddress
+		mainAnnounceUrl, err = models.NewAnnounceAddressFromString(buf1)
+		if err != nil {
+			return err
+		}
 
-	tf.AnnounceUrlMain = *mainAnnounceUrl
+		tf.AnnounceUrlMain = *mainAnnounceUrl
+	}
 
 	// 2. Get the optional 'announce-list' section from the decoded object.
 	var buf2 []string
