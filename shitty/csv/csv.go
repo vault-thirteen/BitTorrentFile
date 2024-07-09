@@ -97,6 +97,7 @@ func (w *Writer) WriteRow(row []any) (err error) {
 				cell = strconv.FormatFloat(float64(f64Var), 'f', -1, 64)
 
 			case []byte:
+				// Raw bytes are printed as a string in hexadecimal format.
 				ba = v.([]byte)
 				cell = addEdgeQuotes(strings.ToUpper(hex.EncodeToString(ba)))
 
