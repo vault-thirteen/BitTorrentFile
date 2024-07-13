@@ -7,8 +7,8 @@ import (
 
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
 	ft "github.com/vault-thirteen/BitTorrentFile/models/file-tree"
-	"github.com/vault-thirteen/BitTorrentFile/models/hash"
 	iface "github.com/vault-thirteen/BitTorrentFile/models/interface"
+	"github.com/vault-thirteen/auxie/hash"
 	b "github.com/vault-thirteen/bencode"
 )
 

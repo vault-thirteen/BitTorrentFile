@@ -8,8 +8,9 @@ import (
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
 	ft "github.com/vault-thirteen/BitTorrentFile/models/file-tree"
 	"github.com/vault-thirteen/BitTorrentFile/models/generic"
-	"github.com/vault-thirteen/BitTorrentFile/models/hash"
+	mhash "github.com/vault-thirteen/BitTorrentFile/models/hash"
 	iface "github.com/vault-thirteen/BitTorrentFile/models/interface"
+	"github.com/vault-thirteen/auxie/hash"
 	b "github.com/vault-thirteen/bencode"
 )
 
@@ -38,11 +39,11 @@ type BitTorrentFile struct {
 
 	// BitTorrent Info Hash.
 	// The original first version of info hash.
-	BTIH hash.BtihData
+	BTIH mhash.BtihData
 
 	// New BitTorrent Info Hash.
 	// Second version of info hash.
-	BTIH2 hash.BtihData2
+	BTIH2 mhash.BtihData2
 
 	// List of announce URLs of trackers described in the BitTorrent File.
 	AnnounceUrlMain models.AnnounceAddress

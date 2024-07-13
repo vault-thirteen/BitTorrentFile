@@ -14,9 +14,8 @@ func RemoveDuplicatesFromList[T comparable](in []T) (out []T) {
 			out = append(out, x)
 		}
 	}
+
 	return out
 }
 
 //TODO: Add a non-destructive version of this function to preserve items order.
-
-//TODO: Move this package to 'auxie' repository.

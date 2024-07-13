@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	btf "github.com/vault-thirteen/BitTorrentFile"
-	"github.com/vault-thirteen/BitTorrentFile/shitty/csv"
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/file"
+	"github.com/vault-thirteen/auxie/csv"
 	"github.com/vault-thirteen/auxie/errors"
 	"github.com/vault-thirteen/bencode"
 )
