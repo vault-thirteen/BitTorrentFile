@@ -3,8 +3,8 @@ module github.com/vault-thirteen/BitTorrentFile
 go 1.20
 
 require (
-	github.com/vault-thirteen/auxie v0.27.2
-	github.com/vault-thirteen/bencode v1.7.6
+	github.com/vault-thirteen/auxie v0.28.1
+	github.com/vault-thirteen/bencode v1.7.7
 )
 
 require (
