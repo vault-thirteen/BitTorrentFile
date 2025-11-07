@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"
-	ver "github.com/vault-thirteen/auxie/Versioneer"
+	ver "github.com/vault-thirteen/auxie/Versioneer/classes/Versioneer"
 )
 
 // Program's entry point.
