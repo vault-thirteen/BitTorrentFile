@@ -4,7 +4,7 @@ go 1.25.9
 
 require (
 	github.com/vault-thirteen/auxie v0.32.0
-	github.com/vault-thirteen/bencode v1.7.17
+	github.com/vault-thirteen/bencode v1.7.18
 )
 
 require (
