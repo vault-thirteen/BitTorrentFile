@@ -6,8 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"
 	ver "github.com/vault-thirteen/auxie/Versioneer/classes/Versioneer"
+
+	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"
 )
 
 // Program's entry point.
@@ -55,7 +56,7 @@ func mustBeNoError(err error) {
 
 // showIntro shows introductory information about the program.
 func showIntro() {
-	versioneer, err := ver.New()
+	versioneer, err := ver.New(false)
 	mustBeNoError(err)
 	versioneer.ShowIntroText(ToolName)
 	versioneer.ShowComponentsInfoText()
