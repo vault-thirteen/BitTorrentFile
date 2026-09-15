@@ -7,7 +7,7 @@ github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsK
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/rogpeppe/go-internal v1.16.0 h1:O9DK+vNMDVGLr2BeZqmpLeMjiMNkuXfcqntWbZV6S5g=
 github.com/rogpeppe/go-internal v1.16.0/go.mod h1:DrUVZyrJU+txYW5/1kwtXQSMFio52ZOxX7yM1VHvnxs=
-github.com/vault-thirteen/auxie v0.36.8 h1:ORyARdYr9ukfipgh+ZmAlOaFXd/hKsEVPCWHOSxdjWc=
-github.com/vault-thirteen/auxie v0.36.8/go.mod h1:uQgKrRlcRQNdEFqzAEnYlxhCYVDhgNZPDJgygOvK0WM=
-github.com/vault-thirteen/bencode v1.7.23 h1:JhebE1uOoKT9YYhBKCwRQPff/W2doEzCfFcR53Y1DyQ=
-github.com/vault-thirteen/bencode v1.7.23/go.mod h1:1UfADIudrSeEhskFnTi8YbgeWJaYD8+WDOf3UUNqGxQ=
+github.com/vault-thirteen/auxie v0.36.9 h1:lSwRCSM7q2UHzrdEywcBecGW/lCUAx3Vx9izfBmq8rE=
+github.com/vault-thirteen/auxie v0.36.9/go.mod h1:1H47lwQIorxPY8f9DKFfjxzzPbw2ve01n09w/DOaV5c=
+github.com/vault-thirteen/bencode v1.7.24 h1:xXUvdptP2sIZkA7kvSA/aJRu7GWP6Sbaak/Ye1b8Yhs=
+github.com/vault-thirteen/bencode v1.7.24/go.mod h1:5PeQCJvZHFqEwp4NczW8Wu+5cTHoTKjfSX7QlzNgMeE=
