@@ -3,9 +3,9 @@ package models
 import (
 	"testing"
 
+	b "github.com/vault-thirteen/auxie/bencode"
 	"github.com/vault-thirteen/auxie/hash"
 	"github.com/vault-thirteen/auxie/tester"
-	b "github.com/vault-thirteen/bencode"
 
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
 	ft "github.com/vault-thirteen/BitTorrentFile/models/file-tree"

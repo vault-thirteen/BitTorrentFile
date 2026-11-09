@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/vault-thirteen/auxie/bencode"
 	"github.com/vault-thirteen/auxie/cio"
 	"github.com/vault-thirteen/auxie/csv"
 	"github.com/vault-thirteen/auxie/errors"
-	"github.com/vault-thirteen/bencode"
 
 	btf "github.com/vault-thirteen/BitTorrentFile"
 	"github.com/vault-thirteen/BitTorrentFile/tools/indexer/cla"

@@ -4,9 +4,9 @@ import (
 	"encoding/hex"
 	"reflect"
 
+	b "github.com/vault-thirteen/auxie/bencode"
 	"github.com/vault-thirteen/auxie/errors"
 	"github.com/vault-thirteen/auxie/hash"
-	b "github.com/vault-thirteen/bencode"
 
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
 	ft "github.com/vault-thirteen/BitTorrentFile/models/file-tree"

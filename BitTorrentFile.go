@@ -3,14 +3,14 @@ package btf
 import (
 	"time"
 
+	b "github.com/vault-thirteen/auxie/bencode"
 	"github.com/vault-thirteen/auxie/errors"
 	"github.com/vault-thirteen/auxie/hash"
-	b "github.com/vault-thirteen/bencode"
+	"github.com/vault-thirteen/auxie/list"
 
 	"github.com/vault-thirteen/BitTorrentFile/models"
 	e "github.com/vault-thirteen/BitTorrentFile/models/error"
 	ft "github.com/vault-thirteen/BitTorrentFile/models/file-tree"
-	"github.com/vault-thirteen/BitTorrentFile/models/generic"
 	mhash "github.com/vault-thirteen/BitTorrentFile/models/hash"
 	iface "github.com/vault-thirteen/BitTorrentFile/models/interface"
 )
@@ -343,7 +343,7 @@ func (tf *BitTorrentFile) readAnnounceUrls() (err error) {
 			return err
 		}
 
-		aa = generic.RemoveDuplicatesFromList[models.AnnounceAddress](aa)
+		aa = list.RemoveDuplicatesFromList[models.AnnounceAddress](aa)
 
 		tf.AnnounceUrlsAux = append(tf.AnnounceUrlsAux, aa)
 	}
